@@ -1,16 +1,11 @@
-import { View, Text } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import TabNavigator from "./TabNavigator";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { supabase } from "../utils/supabase";
 import AuthScreen from "../screens/AuthScreen";
+import SplashScreen from "../screens/SplashScreen";
 
 const RootStack = createNativeStackNavigator();
-
-export type RootStackParamList = {
-  Main: undefined;
-};
 
 interface Temp {
   full_name: string;
@@ -19,21 +14,52 @@ interface Temp {
 
 const RootNavigator = () => {
   const [user, setUser] = useState<Temp | undefined>();
+  const [isLoading, setIsLoading] = useState(true);
+
   useEffect(() => {
-    supabase.auth.onAuthStateChange(async (event, session) => {
+    const doAuth = async () => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    };
+    supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
-        let { data } = await supabase.auth.getUser();
-        console.log(data.user?.user_metadata);
-        setUser(data.user?.user_metadata as Temp);
+        setUser(session?.user.user_metadata as Temp);
+      }
+      if (event === "SIGNED_OUT") {
+        setUser(undefined);
       }
     });
-  }, []);
 
+    doAuth().finally(() => setIsLoading(false));
+  }, []);
   return (
-    <RootStack.Navigator>
-      <RootStack.Group>
+    <RootStack.Navigator
+      screenOptions={() => ({
+        tabBarActiveTintColor: "red",
+        tabBarInactiveTintColor: "gray",
+        headerBackTitle: "Back",
+        headerBackVisible: true,
+      })}
+    >
+      <RootStack.Group
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: "#454565",
+          },
+          headerTintColor: "#fff",
+          headerBackTitle: "Back",
+        }}
+      >
+        {isLoading && (
+          <RootStack.Screen name="Loading" component={SplashScreen} />
+        )}
         {user ? (
-          <RootStack.Screen name="Main" component={TabNavigator} />
+          <RootStack.Screen
+            options={{
+              animation: "fade",
+            }}
+            name="Main"
+            component={TabNavigator}
+          />
         ) : (
           <RootStack.Screen name="Auth" component={AuthScreen} />
         )}

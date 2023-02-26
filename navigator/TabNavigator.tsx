@@ -1,25 +1,27 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import TeamScreen from "../screens/TeamScreen";
 import ScoreKeeperScreen from "../screens/ScoreKeeperScreen";
-import { useNavigation } from "@react-navigation/native";
-import AuthScreen from "../screens/AuthScreen";
+import SettingsScreen from "../screens/SettingsScreen";
+import CreateTeamScreen from "../screens/CreateTeamScreen";
+import JoinTeamScreen from "../screens/JoinTeamScreen";
+import TeamScreen from "../screens/TeamScreen";
+import TeamNavigator from "./TeamNavigator";
 
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
-  const navigation = useNavigation();
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={() => ({
         tabBarActiveTintColor: "red",
         tabBarInactiveTintColor: "gray",
+        headerBackTitle: "Back",
         headerShown: false,
-        headerTitle: "",
       })}
     >
       <Tab.Screen name="Score" component={ScoreKeeperScreen} />
-      <Tab.Screen name="Teams" component={TeamScreen} />
+      <Tab.Screen name="Team" component={TeamNavigator} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
 };

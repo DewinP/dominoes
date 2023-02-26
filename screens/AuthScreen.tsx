@@ -5,44 +5,55 @@ import {
   Alert,
   TextInput,
   Pressable,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { supabase } from "../utils/supabase";
+
+interface AuthUserSignUp {
+  email: string;
+  fullName: string;
+  userName: string;
+  password: string;
+}
+
 const AuthScreen = () => {
   const [isSigningUp, setIsSigningUp] = useState(false);
-  const [email, setEmail] = useState("");
-  const [fullName, setFullname] = useState("");
-  const [userName, SetUserName] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsloading] = useState(false);
+  const [userInfo, setUserInfo] = useState<AuthUserSignUp>({
+    email: "",
+    fullName: "",
+    userName: "",
+    password: "",
+  });
 
   async function signInWithEmail() {
-    setLoading(true);
+    setIsloading(true);
     const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+      email: userInfo.email,
+      password: userInfo.password,
     });
     if (error) Alert.alert(error.message);
-    setLoading(false);
+    setIsloading(false);
   }
 
   async function signUpWithEmail() {
-    setLoading(true);
+    setIsloading(true);
+
     const { error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
+      email: userInfo.email,
+      password: userInfo.password,
       options: {
         data: {
-          username: userName,
-          full_name: fullName,
+          username: userInfo.userName,
+          full_name: userInfo.fullName,
         },
       },
     });
 
     if (error) Alert.alert(error.message);
-    setLoading(false);
+    setIsloading(false);
   }
-
   async function handleAuth() {
     if (isSigningUp) {
       signUpWithEmail();
@@ -66,8 +77,10 @@ const AuthScreen = () => {
                   Your Email
                 </Text>
                 <TextInput
-                  value={email}
-                  onChangeText={(text) => setEmail(text)}
+                  value={userInfo.email}
+                  onChangeText={(text) =>
+                    setUserInfo({ ...userInfo, email: text })
+                  }
                   autoCapitalize="none"
                   placeholder="name@company.com"
                   placeholderTextColor="gray"
@@ -80,8 +93,10 @@ const AuthScreen = () => {
                     Full Name
                   </Text>
                   <TextInput
-                    value={fullName}
-                    onChangeText={(text) => setFullname(text)}
+                    value={userInfo.fullName}
+                    onChangeText={(text) =>
+                      setUserInfo({ ...userInfo, fullName: text })
+                    }
                     autoCapitalize="none"
                     placeholder="John Doe"
                     placeholderTextColor="gray"
@@ -95,8 +110,10 @@ const AuthScreen = () => {
                     Username
                   </Text>
                   <TextInput
-                    value={userName}
-                    onChangeText={(text) => SetUserName(text)}
+                    value={userInfo.userName}
+                    onChangeText={(text) =>
+                      setUserInfo({ ...userInfo, userName: text })
+                    }
                     autoCapitalize="none"
                     placeholder="Domino King"
                     placeholderTextColor="gray"
@@ -109,18 +126,24 @@ const AuthScreen = () => {
                   Password
                 </Text>
                 <TextInput
-                  value={password}
-                  onChangeText={(text) => setPassword(text)}
+                  value={userInfo.password}
+                  onChangeText={(text) =>
+                    setUserInfo({ ...userInfo, password: text })
+                  }
                   secureTextEntry={true}
                   placeholder="*******"
                   placeholderTextColor="gray"
                   className="p-2 border rounded-lg bg-gray-700  placeholder-gray-400 text-white border-gray-600"
                 />
               </View>
-              <Pressable onPress={handleAuth}>
-                <Text className="p-2 w-full text-white bg-blue-600 font-medium rounded-md text-xl text-center">
-                  {isSigningUp ? "SignUp" : "Login"}
-                </Text>
+              <Pressable disabled={isLoading} onPress={handleAuth}>
+                {isLoading ? (
+                  <ActivityIndicator />
+                ) : (
+                  <Text className="p-2 w-full text-white bg-blue-600 font-medium rounded-md text-xl text-center">
+                    {isSigningUp ? "SignUp" : "Login"}
+                  </Text>
+                )}
               </Pressable>
               <View className="flex flex-row justify-end items-center pt-1">
                 <Text className="text-white text-sm font-light">
